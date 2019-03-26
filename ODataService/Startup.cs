@@ -30,6 +30,7 @@ namespace ODataService
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddOData();
+            services.AddODataQueryFilter();
             services.AddMvc(options =>
             {
                 options.EnableEndpointRouting = false;
