@@ -53,6 +53,7 @@ namespace ODataService
             app.UseHttpsRedirection();
             app.UseMvc(b =>
             {
+                b.Count().Filter().OrderBy().Expand().Select().MaxTop(null);
                 b.MapODataServiceRoute("odata", "odata", GetEdmModel());
             });
         }
