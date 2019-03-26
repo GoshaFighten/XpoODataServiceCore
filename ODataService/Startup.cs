@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DevExpress.Xpo.DB;
 using Microsoft.AspNet.OData.Builder;
 using Microsoft.AspNet.OData.Extensions;
 using Microsoft.AspNetCore.Builder;
@@ -13,6 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.OData.Edm;
+using ODataService.Helpers;
 using ODataService.Models;
 
 namespace ODataService
@@ -36,6 +38,10 @@ namespace ODataService
                 options.EnableEndpointRouting = false;
             })
             .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            services.AddXpoDefaultUnitOfWork(true, (DataLayerOptionsBuilder options) =>
+                options.UseConnectionString(Configuration.GetConnectionString("MSSqlServer"))
+                .UseAutoCreationOption(AutoCreateOption.DatabaseAndSchema) // debug only
+                .UseEntityTypes(ConnectionHelper.GetPersistentTypes()));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -55,33 +61,8 @@ namespace ODataService
             app.UseMvc(b =>
             {
                 b.Count().Filter().OrderBy().Expand().Select().MaxTop(null);
-                b.MapODataServiceRoute("odata", "odata", GetEdmModel());
+                b.MapODataServiceRoute("odata", "odata", SingletonEdmModel.GetEdmModel());
             });
-        }
-
-        static IEdmModel GetEdmModel()
-        {
-            ODataConventionModelBuilder builder = new ODataConventionModelBuilder();
-            var documents = builder.EntitySet<BaseDocument>("Documents");
-            var customers = builder.EntitySet<Customer>("Customers");
-            var orders = builder.EntitySet<Order>("Orders");
-            var contracts = builder.EntitySet<Contract>("Contracts");
-            var products = builder.EntitySet<Product>("Products");
-            var orderDetails = builder.EntitySet<OrderDetail>("OrderDetails");
-
-            documents.EntityType.HasKey(t => t.ID);
-            customers.EntityType.HasKey(t => t.CustomerID);
-            products.EntityType.HasKey(t => t.ProductID);
-            orderDetails.EntityType.HasKey(t => t.OrderDetailID);
-            orders.EntityType.DerivesFrom<BaseDocument>();
-            contracts.EntityType.DerivesFrom<BaseDocument>();
-
-            builder.Action("InitializeDatabase");
-            builder.Function("TotalSalesByYear")
-                .Returns<decimal>()
-                .Parameter<int>("year");
-
-            return builder.GetEdmModel();
         }
     }
 }
