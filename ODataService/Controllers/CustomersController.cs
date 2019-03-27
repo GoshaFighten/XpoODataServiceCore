@@ -54,7 +54,7 @@ namespace ODataService.Controllers
         }
 
         [HttpPut]
-        public IActionResult Put([FromODataUri] string key, Customer customer)
+        public IActionResult Put([FromODataUri] string key, [FromBody] Customer customer)
         {
             if (!ModelState.IsValid)
             {
@@ -85,7 +85,7 @@ namespace ODataService.Controllers
         }
 
         [HttpPatch]
-        public IActionResult Patch([FromODataUri] string key, Delta<Customer> customer)
+        public IActionResult Patch([FromODataUri] string key, [FromBody] Delta<Customer> customer)
         {
             if (!ModelState.IsValid)
             {

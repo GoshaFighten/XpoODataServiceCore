@@ -31,13 +31,10 @@ namespace ODataService.Controllers
         [ODataRoute("TotalSalesByYear(year={year})")]
         public IActionResult TotalSalesByYear(int year)
         {
-            using (UnitOfWork uow = new UnitOfWork())
-            {
-                decimal result = uow.Query<Order>()
+            decimal result = Session.Query<Order>()
                     .Where(o => o.Date.Value.Year == year)
                     .Sum(o => o.OrderDetails.Sum(d => d.Quantity * d.UnitPrice));
-                return Ok(result);
-            }
+            return Ok(result);
         }
     }
 }
